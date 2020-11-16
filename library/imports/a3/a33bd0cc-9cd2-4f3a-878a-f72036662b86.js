@@ -7,7 +7,7 @@ cc._RF.push(module, 'a33bdDMnNJPOoeK9yA2ZiuG', 'Card');
 cc.Class({
   "extends": cc.Component,
   properties: {
-    picNum: "032",
+    picNum: "181",
     isCheck: false,
     sprite: {
       "default": null,

@@ -500,8 +500,8 @@
     "relativePath": "model\\primitives.fbx"
   },
   "8f32b26a-6446-43a5-893b-e476e6a29b9b": {
-    "asset": 1526930962000,
-    "meta": 1600784824661,
+    "asset": 1604803108031,
+    "meta": 1604803323666,
     "relativePath": "audio"
   },
   "eb514f5f-4725-41b8-9568-2643e4af2871": {
@@ -515,8 +515,8 @@
     "relativePath": "audio\\score.mp3"
   },
   "7177bb55-a6eb-404d-804d-408f59fae490": {
-    "asset": 1600784824649,
-    "meta": 1600784825155,
+    "asset": 1604803108033,
+    "meta": 1604803323667,
     "relativePath": "migration"
   },
   "bbf56efe-76a0-4545-9465-95abba064479": {
@@ -530,13 +530,13 @@
     "relativePath": "mikado_outline_shadow.fnt"
   },
   "5dcd99cb-77a4-4c95-a7d8-4b5b45295ae5": {
-    "asset": 1604498714515,
-    "meta": 1604498714527,
+    "asset": 1605192914091,
+    "meta": 1605192914105,
     "relativePath": "game.fire"
   },
   "51b0ea7f-a166-4130-bf0b-7f70fc60cb1d": {
-    "asset": 1603719196080,
-    "meta": 1604322355521,
+    "asset": 1604803108041,
+    "meta": 1604803323668,
     "relativePath": "scripts"
   },
   "4644fd26-d96b-4005-8472-fa99fa74e686": {
@@ -550,8 +550,8 @@
     "relativePath": "Star.prefab"
   },
   "f2bd42d3-db89-4efd-b925-6233e5f0d525": {
-    "asset": 1603719054413,
-    "meta": 1604322355521,
+    "asset": 1604803108055,
+    "meta": 1604803323669,
     "relativePath": "textures"
   },
   "0f0d9bf9-c718-4ab0-bd20-f7a4bfe5909c": {
@@ -610,23 +610,28 @@
     "relativePath": "scripts\\Player.js"
   },
   "12bb5849-18b0-4134-b8ee-3a3377e7c82a": {
-    "asset": 1604412676346,
-    "meta": 1604412676353,
+    "asset": 1604823904618,
+    "meta": 1604823904620,
     "relativePath": "porker.prefab"
   },
   "5fff5e61-4874-4a80-99a4-4b273579ed73": {
-    "asset": 1604498852547,
-    "meta": 1604745013137,
+    "asset": 1604803108036,
+    "meta": 1604803323668,
     "relativePath": "resources"
   },
+  "a33bd0cc-9cd2-4f3a-878a-f72036662b86": {
+    "asset": 1604827216539,
+    "meta": 1604827217369,
+    "relativePath": "scripts\\Card.js"
+  },
   "4e12f2d2-42ed-4bf8-a57a-426c4389abd4": {
-    "asset": 1604799653627,
-    "meta": 1604799654354,
+    "asset": 1605539137984,
+    "meta": 1605539631922,
     "relativePath": "scripts\\Game.js"
   },
-  "a33bd0cc-9cd2-4f3a-878a-f72036662b86": {
-    "asset": 1604801935576,
-    "meta": 1604801938647,
-    "relativePath": "scripts\\Card.js"
+  "637dc17b-38e0-4a25-baf6-6c716b7c5a10": {
+    "asset": 1605540039899,
+    "meta": 1605540043285,
+    "relativePath": "scripts\\PokerUtil.js"
   }
 }

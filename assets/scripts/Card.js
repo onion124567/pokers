@@ -2,7 +2,7 @@ cc.Class({
     extends: cc.Component,
     
     properties: {
-      picNum:"032",
+      picNum:"181",
       isCheck:false,
         sprite: {
           default: null,
@@ -33,6 +33,7 @@ cc.Class({
         // let picNum=this.game.getPicNum();
         // cc.systemEvent.on();
         this.node.on("mousedown", this.onMouseDown,this);
+        
       let self=this;
         cc.resources.load("pokers", cc.SpriteAtlas, function (err, atlas) {
          
@@ -46,6 +47,7 @@ cc.Class({
 
     onDestroy () {
         // cc.systemEvent.off("mousedown", this.onMouseDown);
+        
         this.node.off('mousedown', this.onMouseDown, this);
     },
 

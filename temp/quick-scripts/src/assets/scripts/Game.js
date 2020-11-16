@@ -4,6 +4,8 @@ cc._RF.push(module, '4e12fLSQu1L+KV6QmxDiavU', 'Game');
 
 "use strict";
 
+var PokerUtil = require("PokerUtil");
+
 cc.Class({
   "extends": cc.Component,
   properties: {
@@ -23,6 +25,44 @@ cc.Class({
     startCardPostion: 0,
     cardWidth: 80,
     cardArray: [cc.String],
+    //初始牌数组 逆时针 主角是第一个数组
+    pokerPlayer: [],
+    //当前轮次出牌节点,
+    roundPoker: [],
+    //主角当前牌节点
+    playerControlNodeArray: [],
+    //洗牌
+    refreshButton: {
+      "default": null,
+      type: cc.Button
+    },
+    //出牌
+    sendButton: {
+      "default": null,
+      type: cc.Button
+    },
+    //当前主
+    currentWinner: 1,
+    layoutContainer: {
+      "default": null,
+      type: cc.Layout
+    },
+    layoutBottom: {
+      "default": null,
+      type: cc.Layout
+    },
+    layoutTop: {
+      "default": null,
+      type: cc.Layout
+    },
+    layoutLeft: {
+      "default": null,
+      type: cc.Layout
+    },
+    layoutRight: {
+      "default": null,
+      type: cc.Layout
+    },
     // 地面节点，用于确定星星生成的高度
     ground: {
       "default": null,
@@ -49,7 +89,7 @@ cc.Class({
     this.groundY = this.ground.y + this.ground.height / 2; // 初始化计时器
 
     this.timer = 0;
-    this.starDuration = 0;
+    this.starDuration = 0; //创建图片资源
 
     for (var i = 0; i < 13; i++) {
       var pre = 3 + i;
@@ -63,13 +103,60 @@ cc.Class({
 
         str = str + pre + j;
         this.cardArray.push(str);
+        this.cardArray.push(str);
       }
     }
 
-    this.spawnBottomCard(); // this.spawnNewStar();
+    this.cardArray.push("161");
+    this.cardArray.push("161");
+    this.cardArray.push("171");
+    this.cardArray.push("171");
+    this.refreshButton.node.on('click', this.refreshCallback, this);
+    this.sendButton.node.on('click', this.sendCallback, this);
+    this.publishPokers(); // this.spawnNewStar();
     // 初始化计分
 
     this.score = 0;
+  },
+  refreshCallback: function refreshCallback(button) {
+    this.publishPokers();
+  },
+  sendCallback: function sendCallback(button) {
+    var testArray = [];
+
+    for (var i = 0; i < this.playerControlNodeArray.length;) {
+      //判断是否可出
+      var node = this.playerControlNodeArray[i].getComponent('Card');
+
+      if (node.isCheck) {
+        console.log("onion 选中" + PokerUtil.quaryPokerValue(node.picNum));
+        testArray.push(node.picNum);
+        this.saveRoundPoker(node.picNum, 1, i * this.cardWidth);
+        this.playerControlNodeArray[i].destroy();
+        this.playerControlNodeArray.splice(i, 1);
+      } else {
+        i++;
+      } // this.playerControlNodeArray[i].destroy();
+
+    }
+
+    PokerUtil.testLogic(testArray);
+  },
+  //保存出牌  1 2 3 4 顺时针位
+  saveRoundPoker: function saveRoundPoker(picNum, index, offset) {
+    var newStar = cc.instantiate(this.cardPrefab); // newStar.setPicNum("i"+i);
+
+    newStar.getComponent('Card').picNum = picNum;
+    newStar.scaleX = 0.5;
+    newStar.scaleY = 0.5;
+    this.roundPoker.push(newStar); // this.node.addChild(newStar);
+    // let height = this.ground.height / 2 * -1;
+
+    if (index === 1) {
+      // height = height + 100;
+      this.layoutBottom.node.addChild(newStar);
+    } // newStar.setPosition(cc.v2(-150 + this.startCardPostion + offset, height));
+
   },
   spawnNewStar: function spawnNewStar() {
     // 使用给定的模板在场景中生成一个新节点
@@ -84,25 +171,45 @@ cc.Class({
     this.starDuration = this.minStarDuration + Math.random() * (this.maxStarDuration - this.minStarDuration);
     this.timer = 0;
   },
-  spawnBottomCard: function spawnBottomCard() {
-    console.log("onion spawnBottomCard");
 
-    for (var i = 0; i < 17; i++) {
+  /**
+   * 移除旧的节点
+   * 添加新节点
+   */
+  spawnBottomCard: function spawnBottomCard() {
+    if (this.playerControlNodeArray.length > 0) {
+      var destoryNode = this.playerControlNodeArray;
+
+      for (var i = 0; i < destoryNode.length; i++) {
+        destoryNode[i].destroy();
+      }
+
+      this.playerControlNodeArray = [];
+    }
+
+    console.log("spawnBottomCard " + this.pokerPlayer[0].length);
+    this.createBottomCard();
+  },
+  createBottomCard: function createBottomCard() {
+    var startPosition = 0;
+
+    for (var i = 0; i < this.pokerPlayer[0].length; i++) {
       // 使用给定的模板在场景中生成一个新节点
       var newStar = cc.instantiate(this.cardPrefab); // newStar.setPicNum("i"+i);
 
-      newStar.getComponent('Card').picNum = this.cardArray[i];
-      this.node.addChild(newStar);
-      newStar.setPosition(cc.v2(-200 + this.startCardPostion + i * this.cardWidth, this.ground.height / 2 * -1));
-    } // // 在星星组件上暂存 Game 对象的引用
-    // newStar.getComponent('Star').game = this;
-    // // 重置计时器，根据消失时间范围随机取一个值
-    // this.starDuration = this.minStarDuration + Math.random() * (this.maxStarDuration - this.minStarDuration);
-    // this.timer = 0;
+      newStar.getComponent('Card').picNum = this.pokerPlayer[0][i];
+      this.playerControlNodeArray.push(newStar); // this.node.addChild(newStar);
 
-  },
-  getPicNum: function getPicNum() {
-    return this.cardArray[4];
+      this.layoutContainer.node.addChild(newStar);
+      var height = this.ground.height / 2 * -1;
+      startPosition = i * this.cardWidth;
+
+      if (i > 13) {
+        height = height - 150;
+        startPosition = (i - 13) * this.cardWidth;
+      } // newStar.setPosition(cc.v2(-200 + this.startCardPostion + startPosition, height));
+
+    }
   },
   getNewStarPosition: function getNewStarPosition() {
     var randX = 0; // 根据地平面位置和主角跳跃高度，随机得到一个星星的 y 坐标
@@ -140,6 +247,29 @@ cc.Class({
     this.player.stopAllActions(); //停止 player 节点的跳跃动作
 
     cc.director.loadScene('game');
+  },
+
+  /**
+  * 把牌发给四家
+  */
+  publishPokers: function publishPokers() {
+    this.pokerPlayer = [];
+    var pokerArray = this.cardArray.slice(0);
+
+    for (var i = 0; i < 4; i++) {
+      var playerPokerArray = [];
+
+      for (var j = 0; j < 27; j++) {
+        var pokerNum = Math.random() * pokerArray.length;
+        pokerNum = parseInt(pokerNum);
+        var value = pokerArray.splice(pokerNum, 1);
+        playerPokerArray.push(value);
+      }
+
+      this.pokerPlayer.push(playerPokerArray);
+    }
+
+    this.spawnBottomCard();
   }
 });
 
