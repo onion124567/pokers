@@ -35,6 +35,7 @@ export default class PokerUtil {
             console.error("onion", "暂不支持数组" + valueLeft + "/" + valueRight);
             return LEFT_WIN;
         }
+
         if (valueRight == valueLeft) {
             //完全相同，先牌大
             return LEFT_WIN;
@@ -130,6 +131,16 @@ export default class PokerUtil {
         } else {//都是副牌 不是本轮主，意义不大
             return LEFT_WIN;
         }
+
+    }
+
+    static compareArray=(gamehost, roundhost, valueLeft, valueRight)=>{
+        if(valueLeft.length!=valueRight.length){
+            console.error("onion","数组长度不一致");
+            return LEFT_WIN;
+        }
+        //一对直接比
+        //多对先校验合法性，1是否多对 2是否连对 3花色一致 4
 
     }
     /**
