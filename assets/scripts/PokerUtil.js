@@ -30,11 +30,11 @@ export default class PokerUtil {
      * @param {*} valueRight 后牌
      */
     static comparePoker = (gamehost, roundhost, valueLeft, valueRight) => {
-        console.log("onion", "comparePoker++");
-        if (valueLeft.isArray() || valueRight.isArray()) {
-            console.error("onion", "暂不支持数组" + valueLeft + "/" + valueRight);
-            return LEFT_WIN;
-        }
+        console.log("onion", "comparePoker++"+typeof valueLeft ); 
+        // if (Array.isArray(valueLeft) || Array.isArray(valueRight)) {
+        //     console.error("onion", "暂不支持数组" + typeof valueLeft + "/" + typeof valueRight);
+        //     return LEFT_WIN;
+        // }
 
         if (valueRight == valueLeft) {
             //完全相同，先牌大
@@ -98,7 +98,13 @@ export default class PokerUtil {
         }
         let leftNum = parseInt(valueLeft);
         let rightNum = parseInt(valueRight);
-        return this.quaryPokerWeight(rightNum) - this.quaryPokerWeight(leftNum);
+        let result=this.quaryPokerWeight(rightNum) - this.quaryPokerWeight(leftNum);
+        if(result>0){
+            result= RIGHT_WIN;
+        }else if(result<0){
+            result=LEFT_WIN;
+        }
+        return result;
 
     }
     /**
@@ -148,6 +154,14 @@ export default class PokerUtil {
      */
     static compareRound = (playPokers) => {
 
+    }
+
+    static destoryArray =(destoryNode)=>{
+        if(destoryNode!=null){
+            for (let i = 0; i < destoryNode.length; i++) {
+                destoryNode[i].destroy();
+            }
+        }
     }
 
     /**

@@ -18,7 +18,7 @@
                 "children": [
                   "hierarchy"
                 ],
-                "height": 318.6875,
+                "height": 319,
                 "type": "panel",
                 "width": 459
               },
@@ -28,7 +28,7 @@
                   "assets",
                   "cloud-function"
                 ],
-                "height": 597.296875,
+                "height": 597,
                 "type": "panel",
                 "width": 459
               }

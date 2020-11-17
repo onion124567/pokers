@@ -123,6 +123,7 @@ cc.Class({
   },
   sendCallback: function sendCallback(button) {
     var testArray = [];
+    PokerUtil.destoryArray(this.roundPoker);
 
     for (var i = 0; i < this.playerControlNodeArray.length;) {
       //判断是否可出
@@ -179,11 +180,7 @@ cc.Class({
   spawnBottomCard: function spawnBottomCard() {
     if (this.playerControlNodeArray.length > 0) {
       var destoryNode = this.playerControlNodeArray;
-
-      for (var i = 0; i < destoryNode.length; i++) {
-        destoryNode[i].destroy();
-      }
-
+      PokerUtil.destoryArray(destoryNode);
       this.playerControlNodeArray = [];
     }
 
