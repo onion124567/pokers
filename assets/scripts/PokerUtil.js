@@ -16,7 +16,7 @@ export default class PokerUtil {
             console.log("onion", PokerUtil.comparePoker(gamehost, roundhost, testArray[0], testArray[1]));
         }
     }
-    static testArrayLogic = (testArray1,testArray2) => {
+    static testArrayLogic = (testArray1, testArray2) => {
         let gamehost = Math.random() * 4;
         let roundhost = Math.random() * 4;
         gamehost = parseInt(gamehost) + 1;
@@ -37,9 +37,9 @@ export default class PokerUtil {
      * @param {*} valueRight 后牌
      */
     static comparePoker = (gamehost, roundhost, valueLeft, valueRight) => {
-        console.log("onion", "comparePoker++" + PokerUtil.quaryPokerValue(valueLeft)+"/"+PokerUtil.quaryPokerValue(valueRight));
+        console.log("onion", "comparePoker++" + PokerUtil.quaryPokerValue(valueLeft) + "/" + PokerUtil.quaryPokerValue(valueRight));
         if (Array.isArray(valueLeft) || Array.isArray(valueRight)) {
-            console.error("onion", "暂不支持数组" );
+            console.error("onion", "暂不支持数组");
             PokerUtil.compareArray(gamehost, roundhost, valueLeft, valueRight);
             return LEFT_WIN;
         }
@@ -153,18 +153,89 @@ export default class PokerUtil {
 
     static compareArray = (gamehost, roundhost, valueLeft, valueRight) => {
         //偶数张，排数不一致
-        if (valueLeft.length != valueRight.length||valueLeft.length%2!=0) {
+        if (valueLeft.length != valueRight.length || valueLeft.length % 2 != 0) {
             console.error("onion", "数组长度不一致");
             return LEFT_WIN;
         }
         //1 排序
-        let arrayLeft=valueLeft.sort();
-        let arrayRight=valueRight.sort();
-        //2 奇数和偶数一样，对子合法性
+        let arrayLeft = valueLeft.sort();
+        let arrayRight = valueRight.sort();
+        //2 奇数和偶数一样，判断对子合法性
+        let resultLeft = PokerUtil.checkArrayValue(arrayLeft);
+        let resultRight = PokerUtil.checkArrayValue(arrayRight);
+        if (resultLeft[0] == "-1") {
+            return RIGHT_WIN;
+        }
+        if (resultRight[0] == "-1") {
+            return LEFT_WIN;
+        }
+
+        if (gamehost == resultLeft[0] == resultRight[0]) {
+            //都是主对
+            if (resultLeft[1] > resultRight[1]) {
+                return LEFT_WIN;
+            } else {
+                return RIGHT_WIN;
+            }
+        } else if (gamehost == resultLeft[0]) {
+            return LEFT_WIN;
+        } else if (gamehost == resultRight[0]) {
+            return RIGHT_WIN;
+        } else if (roundhost == resultLeft[0] == resultRight[0]) {
+            //都是副对
+            if (resultLeft[1] > resultRight[1]) {
+                return LEFT_WIN;
+            } else {
+                return RIGHT_WIN;
+            }
+        } else if (roundhost == resultLeft[0]) {
+            return LEFT_WIN;
+        } else if (gamehost == resultRight[0]) {
+            return RIGHT_WIN;
+        } else {//都不是主 跟牌大小无意义
+            return LEFT_WIN;
+        }
 
         //一对直接比
         //多对先校验合法性，1是否多对 2是否连对 3花色一致 4
 
+    }
+    /**
+     * 
+     * @param {*} array 
+     */
+    static checkArrayValue = (array) => {
+        let odd = "-1";
+        let even = "-1"
+        let lastType = "-1";
+        let result = 0;
+        for (let index = 0; index < array.length; index++) {
+            if (index % 2 == 0) {
+                even = array[index];
+            } else {
+                odd = array[index];
+                if (even != odd) {
+                    return ["-1", -1];
+                }
+                let cardNum = odd;
+                let type = "0";
+                if (cardNum == "171" || cardNum == "161") {
+                    //大小王
+                    type = "5";
+                } else {
+                    let str = cardNum.substring(2);
+                    type = PokerUtil.quaryType(str);
+                }
+                if (lastType != type && lastType != "-1") {
+                    //不是首次且与之前花色不同，不能算对子
+                    return ["-1", -1];
+                }
+                lastType = type;
+                let compare = cardNum.substring(0, 2);
+                result = result + PokerUtil.quaryPokerWeight(parseInt(compare));
+            }
+        }
+        return [lastType, result];
     }
     /**
      * 比本轮大小，返回赢家 1234顺位
@@ -189,10 +260,19 @@ export default class PokerUtil {
                 return "梅花";
             case "3":
                 return "红桃";
-                break;
             case "4":
                 return "黑桃";
         }
+    }
+    static quaryPokerTypeValue = (pokerValue) => {
+        pokerValue=pokerValue+"";
+        if (pokerValue == "171") {
+            return "3";
+        }
+        if (pokerValue == "161") {
+            return "4";
+        }
+        return pokerValue.substring(2);
     }
     /**
      * 通过牌序查花色大小

@@ -41,28 +41,41 @@ cc.Class({
       "default": null,
       type: cc.Button
     },
-    //当前主
+    //当前胜方
     currentWinner: 1,
+    //本轮主
+    gameHost: "1",
+    //玩家拥有牌
     layoutContainer: {
       "default": null,
       type: cc.Layout
     },
+    //玩家出的牌 
     layoutBottom: {
       "default": null,
       type: cc.Layout
     },
+    //对家出牌 第三位
     layoutTop: {
       "default": null,
       type: cc.Layout
     },
+    //下家出牌 左手第二位
     layoutLeft: {
       "default": null,
       type: cc.Layout
     },
+    //上家出牌，右手第四位
     layoutRight: {
       "default": null,
       type: cc.Layout
     },
+    //战报
+    logLabel: {
+      "default": null,
+      type: cc.Label
+    },
+    playLog: "游戏开始",
     // 地面节点，用于确定星星生成的高度
     ground: {
       "default": null,
@@ -142,6 +155,7 @@ cc.Class({
     }
 
     PokerUtil.testLogic(testArray);
+    this.appendLog("追加牌内容");
   },
   //保存出牌  1 2 3 4 顺时针位
   saveRoundPoker: function saveRoundPoker(picNum, index, offset) {
@@ -252,6 +266,7 @@ cc.Class({
   publishPokers: function publishPokers() {
     this.pokerPlayer = [];
     var pokerArray = this.cardArray.slice(0);
+    var host = parseInt(Math.random() * 4);
 
     for (var i = 0; i < 4; i++) {
       var playerPokerArray = [];
@@ -261,12 +276,37 @@ cc.Class({
         pokerNum = parseInt(pokerNum);
         var value = pokerArray.splice(pokerNum, 1);
         playerPokerArray.push(value);
+
+        if (i == host && j == 26) {
+          //随机方的最后一张牌做主
+          this.gameHost = PokerUtil.quaryPokerTypeValue(value);
+          this.appendLog("本轮游戏主" + PokerUtil.quaryType(this.gameHost) + ",主牌" + PokerUtil.quaryPokerValue(value) + "在" + this.expandPlayer(i));
+        }
       }
 
       this.pokerPlayer.push(playerPokerArray);
     }
 
     this.spawnBottomCard();
+  },
+  expandPlayer: function expandPlayer(location) {
+    switch (location) {
+      case 0:
+        return "自己";
+
+      case 1:
+        return "下家";
+
+      case 2:
+        return "对家";
+
+      case 3:
+        return "上家";
+    }
+  },
+  appendLog: function appendLog(string) {
+    this.playLog = this.playLog + "\n" + string;
+    this.logLabel.string = this.playLog;
   }
 });
 

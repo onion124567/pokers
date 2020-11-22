@@ -11,6 +11,7 @@
                     function __define (exports, require, module) {
                         if (!nodeEnv) {__quick_compile_project__.registerModule(__filename, module);}
 require('./assets/migration/use_v2.0.x_cc.Toggle_event');
+require('./assets/scripts/AIUtil');
 require('./assets/scripts/Card');
 require('./assets/scripts/Game');
 require('./assets/scripts/Player');
