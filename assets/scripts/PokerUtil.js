@@ -201,7 +201,7 @@ export default class PokerUtil {
 
     }
     /**
-     * 
+     * 判断对子合法性 返回[花色 权重]
      * @param {*} array 
      */
     static checkArrayValue = (array) => {
@@ -250,6 +250,16 @@ export default class PokerUtil {
                 destoryNode[i].destroy();
             }
         }
+    }
+    static sortPokers=(host,cardArray)=>{
+        let type1Array=[];
+        let type2Array=[];
+        let type3Array=[];
+        let type4Array=[];
+        for(let i=0;i<cardArray.length;i++){
+
+        }
+
     }
 
     static quaryType = (type) => {
