@@ -251,13 +251,20 @@ export default class PokerUtil {
             }
         }
     }
-    static sortPokers=(host,cardArray)=>{
-        let type1Array=[];
-        let type2Array=[];
-        let type3Array=[];
-        let type4Array=[];
-        for(let i=0;i<cardArray.length;i++){
 
+    static sortInsert=(array,item)=>{
+        if(array.length===0){
+            array.push(item);
+            return
+        }
+        let value=item.substring(0,2);
+        let weight=PokerUtil.quaryPokerWeight(value);
+        let firstWeight=PokerUtil.quaryPokerWeight(array[0].substring(0,2));
+        let lastWeight=PokerUtil.quaryPokerWeight(array[array.length-1].substring(0,2));
+        if(weight<=firstWeight){
+            array.unshift(item);
+        }else if(weight>=lastWeight){
+            array.push(item);
         }
 
     }
@@ -344,5 +351,75 @@ export default class PokerUtil {
             return result;
         }
     }
+
+    /**
+     * 把牌按花色排好
+     * @param gameHost
+     * @param cardArray
+     * @returns
+     *  {
+            type1Array:type1Array,
+            type2Array:type2Array,
+            type3Array:type3Array,
+            type4Array:type4Array,
+            hostArray:hostArray,
+            total:total
+        }
+     */
+    static sortPokers=(gameHost,cardArray)=>{
+        let type1Array=[];
+        let type2Array=[];
+        let type3Array=[];
+        let type4Array=[];
+        let hostArray=[];//活动主
+        for(let i=0;i<cardArray.length;i++){
+            let item=cardArray[i];
+            if(item==171||item==161){
+                PokerUtil.sortInsert(hostArray,item);
+                continue;
+            }
+            let type=parseInt(item.substring(2));
+            switch (type){
+                case 1:
+                    PokerUtil.sortInsert(type1Array,item);
+                    break;
+                case 2:
+                    PokerUtil.sortInsert(type2Array,item);
+                    break;
+                case 3:
+                    PokerUtil.sortInsert(type3Array,item);
+                    break;
+                case 4:
+                    PokerUtil.sortInsert(type4Array,item);
+                    break;
+            }
+        }
+        switch (parseInt(gameHost)){
+            case 1:
+                return PokerUtil.createStatic(type1Array,type2Array,type3Array,type4Array,hostArray,
+                    type2Array.concat(type3Array).concat(type4Array).concat(type1Array).concat(hostArray));
+            case 2:
+                return PokerUtil.createStatic(type1Array,type2Array,type3Array,type4Array,hostArray,
+                    type3Array.concat(type4Array).concat(type1Array).concat(type2Array).concat(hostArray));
+            case 3:
+                return PokerUtil.createStatic(type1Array,type2Array,type3Array,type4Array,hostArray,
+                    type4Array.concat(type1Array).concat(type2Array).concat(type3Array).concat(hostArray));
+            case 4:
+                return PokerUtil.createStatic(type1Array,type2Array,type3Array,type4Array,hostArray,
+                    type1Array.concat(type2Array).concat(type3Array).concat(type4Array).concat(hostArray);
+        }
+    }
+
+   static createStatic=(type1Array,type2Array,type3Array,type4Array,hostArray,total)=>{
+        return {
+            type1Array:type1Array,
+            type2Array:type2Array,
+            type3Array:type3Array,
+            type4Array:type4Array,
+            hostArray:hostArray,
+            total:total
+        }
+
+   }
 
 }
