@@ -265,26 +265,32 @@ cc.Class({
   */
   publishPokers: function publishPokers() {
     this.pokerPlayer = [];
+    this.gameHost = null;
     var pokerArray = this.cardArray.slice(0);
-    var host = parseInt(Math.random() * 4);
+    var host = parseInt(Math.random() * 4); //随机主牌花色
 
     for (var i = 0; i < 4; i++) {
       var playerPokerArray = [];
 
       for (var j = 0; j < 27; j++) {
         var pokerNum = Math.random() * pokerArray.length;
-        pokerNum = parseInt(pokerNum);
+        pokerNum = parseInt(pokerNum); //插入手牌中
+
         var value = pokerArray.splice(pokerNum, 1);
         playerPokerArray.push(value);
 
-        if (i == host && j == 26) {
-          //随机方的最后一张牌做主
-          this.gameHost = PokerUtil.quaryPokerTypeValue(value);
-          this.appendLog("本轮游戏主" + PokerUtil.quaryType(this.gameHost) + ",主牌" + PokerUtil.quaryPokerValue(value) + "在" + this.expandPlayer(i));
+        if (this.gameHost == null) {
+          //随机到主后，第一张主牌亮出
+          if (host == PokerUtil.quaryPokerTypeValue(value)) {
+            this.gameHost = value;
+            this.appendLog("本轮游戏主" + PokerUtil.quaryType(this.gameHost) + ",主牌" + PokerUtil.quaryPokerValue(value) + "在" + this.expandPlayer(i));
+          }
         }
       }
 
-      this.pokerPlayer.push(playerPokerArray);
+      var playerObj = PokerUtil.sortPokers(host, playerPokerArray);
+      console.log("onion", JSON.stringify(playerObj));
+      this.pokerPlayer.push(playerObj.total);
     }
 
     this.spawnBottomCard();

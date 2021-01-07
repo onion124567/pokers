@@ -251,21 +251,33 @@ export default class PokerUtil {
             }
         }
     }
+    static sort=(a,b)=>{
+        a=Math.floor(a/10);
+        b=Math.floor(b/10);
+        let left=PokerUtil.quaryPokerWeight(a);
+        let right=PokerUtil.quaryPokerWeight(b);
+        console.log("onion=="+a+"/"+b);
+        console.log("onion=="+left+"/"+right);
+        return left-right;
+    }
 
     static sortInsert=(array,item)=>{
         if(array.length===0){
             array.push(item);
-            return
+            return array
         }
-        let value=item.substring(0,2);
+        // let value=item.substring(0,2);
+        let value=item/10;
         let weight=PokerUtil.quaryPokerWeight(value);
-        let firstWeight=PokerUtil.quaryPokerWeight(array[0].substring(0,2));
-        let lastWeight=PokerUtil.quaryPokerWeight(array[array.length-1].substring(0,2));
+        let firstWeight=PokerUtil.quaryPokerWeight(array[0]/10);
+        let lastWeight=PokerUtil.quaryPokerWeight(array[array.length-1]/10);
         if(weight<=firstWeight){
-            array.unshift(item);
+            array=[item,...array];
+            // array.unshift(item);
         }else if(weight>=lastWeight){
             array.push(item);
         }
+        return array;
 
     }
 
@@ -289,6 +301,7 @@ export default class PokerUtil {
         if (pokerValue == "161") {
             return "4";
         }
+        // console.log("onion","pokerValue"+pokerValue);
         return pokerValue.substring(2);
     }
     /**
@@ -375,25 +388,32 @@ export default class PokerUtil {
         for(let i=0;i<cardArray.length;i++){
             let item=cardArray[i];
             if(item==171||item==161){
-                PokerUtil.sortInsert(hostArray,item);
+                hostArray.push(item);
                 continue;
             }
-            let type=parseInt(item.substring(2));
+            
+            // let type=parseInt(item.substring(2));
+            let type=item%10;
             switch (type){
                 case 1:
-                    PokerUtil.sortInsert(type1Array,item);
+                    type1Array.push(item);
                     break;
                 case 2:
-                    PokerUtil.sortInsert(type2Array,item);
+                    type2Array.push(item);
                     break;
                 case 3:
-                    PokerUtil.sortInsert(type3Array,item);
+                    type3Array.push(item);
                     break;
                 case 4:
-                    PokerUtil.sortInsert(type4Array,item);
+                    type4Array.push(item);
                     break;
             }
         }
+        hostArray.sort(PokerUtil.sort);
+        type1Array.sort(PokerUtil.sort);
+        type2Array.sort(PokerUtil.sort);
+        type3Array.sort(PokerUtil.sort);
+        type3Array.sort(PokerUtil.sort);
         switch (parseInt(gameHost)){
             case 1:
                 return PokerUtil.createStatic(type1Array,type2Array,type3Array,type4Array,hostArray,
@@ -406,7 +426,7 @@ export default class PokerUtil {
                     type4Array.concat(type1Array).concat(type2Array).concat(type3Array).concat(hostArray));
             case 4:
                 return PokerUtil.createStatic(type1Array,type2Array,type3Array,type4Array,hostArray,
-                    type1Array.concat(type2Array).concat(type3Array).concat(type4Array).concat(hostArray);
+                    type1Array.concat(type2Array).concat(type3Array).concat(type4Array).concat(hostArray));
         }
     }
 
