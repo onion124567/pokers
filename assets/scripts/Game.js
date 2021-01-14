@@ -1,5 +1,6 @@
 
- let PokerUtil = require("PokerUtil");
+let PokerUtil = require("PokerUtil");
+let AIHelper = require("AIHelper");
 cc.Class({
     extends: cc.Component,
 
@@ -19,7 +20,7 @@ cc.Class({
         currentCardPosition: 0,
         startCardPostion: 0,
         cardWidth: 80,
-        
+        logicHelper: null,
         cardArray: [cc.String],
         //初始牌数组 逆时针 主角是第一个数组
         pokerPlayer: [],
@@ -39,40 +40,40 @@ cc.Class({
         },
 
         //当前胜方
-        currentWinner:1,
+        currentWinner: 1,
         //本轮主
-        gameHost:"1",
+        gameHost: "1",
         //玩家拥有牌
-        layoutContainer:{
-            default:null,
-            type:cc.Layout
+        layoutContainer: {
+            default: null,
+            type: cc.Layout
         },
         //玩家出的牌 
-        layoutBottom:{
-            default:null,
-            type:cc.Layout
+        layoutBottom: {
+            default: null,
+            type: cc.Layout
         },
         //对家出牌 第三位
-        layoutTop:{
-            default:null,
-            type:cc.Layout
+        layoutTop: {
+            default: null,
+            type: cc.Layout
         },
         //下家出牌 左手第二位
-        layoutLeft:{
-            default:null,
-            type:cc.Layout
+        layoutLeft: {
+            default: null,
+            type: cc.Layout
         },
-         //上家出牌，右手第四位
-        layoutRight:{
-            default:null,
-            type:cc.Layout
+        //上家出牌，右手第四位
+        layoutRight: {
+            default: null,
+            type: cc.Layout
         },
         //战报
-        logLabel:{
-            default:null,
-            type:cc.Label
+        logLabel: {
+            default: null,
+            type: cc.Label
         },
-        playLog:"游戏开始",
+        playLog: "游戏开始",
         // 地面节点，用于确定星星生成的高度
         ground: {
             default: null,
@@ -101,6 +102,7 @@ cc.Class({
         // 初始化计时器
         this.timer = 0;
         this.starDuration = 0;
+        this.logicHelper = new AIHelper();
         //创建图片资源
         for (let i = 0; i < 13; i++) {
             let pre = 3 + i;
@@ -131,14 +133,13 @@ cc.Class({
         this.publishPokers();
     },
     sendCallback: function (button) {
-        let testArray=[];
+        let sendArray = [];
         PokerUtil.destoryArray(this.roundPoker);
         for (let i = 0; i < this.playerControlNodeArray.length;) {
             //判断是否可出
             let node = this.playerControlNodeArray[i].getComponent('Card');
             if (node.isCheck) {
-                console.log("onion 选中" + PokerUtil.quaryPokerValue(node.picNum));
-                testArray.push(node.picNum);
+                sendArray.push(node.picNum);
                 this.saveRoundPoker(node.picNum, 1, i * this.cardWidth);
                 this.playerControlNodeArray[i].destroy();
                 this.playerControlNodeArray.splice(i, 1);
@@ -147,8 +148,17 @@ cc.Class({
             }
             // this.playerControlNodeArray[i].destroy();
         }
-         PokerUtil.testLogic(testArray);
-         this.appendLog("追加牌内容");
+        console.log("onion", "helper" + this.logicHelper);
+        let secondCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 1, sendArray, this.pokerPlayer[1]);
+        //  PokerUtil.testLogic(testArray);
+
+        sendArray.push(secondCardArray);
+
+        this.saveRoundPoker(secondCardArray, 2, 0);
+        let thridCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 2, sendArray, this.pokerPlayer[2]);
+        sendArray.push(thridCardArray);
+        this.saveRoundPoker(thridCardArray, 3, 0);
+        this.appendLog("我出" + sendArray + "下家出" + secondCardArray + "对家出" + thridCardArray);
     },
     //保存出牌  1 2 3 4 顺时针位
     saveRoundPoker: function (picNum, index, offset) {
@@ -160,9 +170,16 @@ cc.Class({
         this.roundPoker.push(newStar);
         // this.node.addChild(newStar);
         // let height = this.ground.height / 2 * -1;
-        if (index === 1) {
-            // height = height + 100;
-            this.layoutBottom.node.addChild(newStar);
+        switch (index) {
+            case 1: this.layoutBottom.node.addChild(newStar);
+                this.logicHelper.removePokerFromArray(this.gameHost, picNum, this.pokerPlayer[0]);
+                break;
+            case 2: this.layoutLeft.node.addChild(newStar);
+                this.logicHelper.removePokerFromArray(this.gameHost, picNum, this.pokerPlayer[1]);
+                break;
+            case 3: this.layoutTop.node.addChild(newStar);
+                this.logicHelper.removePokerFromArray(this.gameHost, picNum, this.pokerPlayer[2]);
+                break;
         }
         // newStar.setPosition(cc.v2(-150 + this.startCardPostion + offset, height));
     },
@@ -189,19 +206,28 @@ cc.Class({
             PokerUtil.destoryArray(destoryNode);
             this.playerControlNodeArray = [];
         }
-        console.log("spawnBottomCard " + this.pokerPlayer[0].length);
+
         this.createBottomCard()
 
     },
 
+    /**
+     * type1Array:type1Array,
+            type2Array:type2Array,
+            type3Array:type3Array,
+            type4Array:type4Array,
+            hostArray:hostArray,
+            total:total
+     */
     createBottomCard: function () {
 
         let startPosition = 0;
-        for (let i = 0; i < this.pokerPlayer[0].length; i++) {
+        let userObj = this.pokerPlayer[0];
+        for (let i = 0; i < userObj.total.length; i++) {
             // 使用给定的模板在场景中生成一个新节点
             var newStar = cc.instantiate(this.cardPrefab);
             // newStar.setPicNum("i"+i);
-            newStar.getComponent('Card').picNum = this.pokerPlayer[0][i];
+            newStar.getComponent('Card').picNum = userObj.total[i];
             this.playerControlNodeArray.push(newStar);
             // this.node.addChild(newStar);
             this.layoutContainer.node.addChild(newStar);
@@ -262,9 +288,9 @@ cc.Class({
     */
     publishPokers: function () {
         this.pokerPlayer = [];
-        this.gameHost=null;
+        this.gameHost = null;
         let pokerArray = this.cardArray.slice(0);
-        let host=parseInt(Math.random() * 4);//随机主牌花色
+        let host = parseInt(Math.random() * 4);//随机主牌花色
         for (let i = 0; i < 4; i++) {
             let playerPokerArray = [];
             for (let j = 0; j < 27; j++) {
@@ -273,36 +299,35 @@ cc.Class({
                 //插入手牌中
                 let value = pokerArray.splice(pokerNum, 1);
                 playerPokerArray.push(value);
-                if(this.gameHost==null){//随机到主后，第一张主牌亮出
-                    if(host==PokerUtil.quaryPokerTypeValue(value)){
-                        this.gameHost=value;
-                        this.appendLog("本轮游戏主"+PokerUtil.quaryType(this.gameHost)
-                        +",主牌"+PokerUtil.quaryPokerValue(value)+"在"+this.expandPlayer(i));
+                if (this.gameHost == null) {//随机到主后，第一张主牌亮出
+                    if (host == PokerUtil.quaryPokerTypeValue(value)) {
+                        this.gameHost = value;
+                        this.appendLog("本轮游戏,主牌" + PokerUtil.quaryPokerValue(value) + "在" + this.expandPlayer(i));
                     }
                 }
             }
-            let playerObj=PokerUtil.sortPokers(host,playerPokerArray);
-            console.log("onion",JSON.stringify(playerObj));
-            this.pokerPlayer.push(playerObj.total);
+            let playerObj = PokerUtil.sortPokers(host, playerPokerArray);
+            console.log("onion====", JSON.stringify(playerObj));
+            this.pokerPlayer.push(playerObj);
         }
         this.spawnBottomCard();
 
     },
-    expandPlayer:function(location){
-        switch(location){
-            case 0:return "自己"
-            case 1:return "下家"
-            case 2:return "对家"
-            case 3:return "上家"   
+    expandPlayer: function (location) {
+        switch (location) {
+            case 0: return "自己"
+            case 1: return "下家"
+            case 2: return "对家"
+            case 3: return "上家"
         }
 
     },
-    appendLog:function(string){
-        this.playLog=this.playLog+"\n"+string;
-        this.logLabel.string=this.playLog;
+    appendLog: function (string) {
+        this.playLog = this.playLog + "\n" + string;
+        this.logLabel.string = this.playLog;
     }
-    
-    
+
+
 
 
 

@@ -6,6 +6,8 @@ cc._RF.push(module, '4e12fLSQu1L+KV6QmxDiavU', 'Game');
 
 var PokerUtil = require("PokerUtil");
 
+var AIHelper = require("AIHelper");
+
 cc.Class({
   "extends": cc.Component,
   properties: {
@@ -24,6 +26,7 @@ cc.Class({
     currentCardPosition: 0,
     startCardPostion: 0,
     cardWidth: 80,
+    logicHelper: null,
     cardArray: [cc.String],
     //初始牌数组 逆时针 主角是第一个数组
     pokerPlayer: [],
@@ -102,7 +105,8 @@ cc.Class({
     this.groundY = this.ground.y + this.ground.height / 2; // 初始化计时器
 
     this.timer = 0;
-    this.starDuration = 0; //创建图片资源
+    this.starDuration = 0;
+    this.logicHelper = new AIHelper(); //创建图片资源
 
     for (var i = 0; i < 13; i++) {
       var pre = 3 + i;
@@ -135,7 +139,7 @@ cc.Class({
     this.publishPokers();
   },
   sendCallback: function sendCallback(button) {
-    var testArray = [];
+    var sendArray = [];
     PokerUtil.destoryArray(this.roundPoker);
 
     for (var i = 0; i < this.playerControlNodeArray.length;) {
@@ -143,8 +147,7 @@ cc.Class({
       var node = this.playerControlNodeArray[i].getComponent('Card');
 
       if (node.isCheck) {
-        console.log("onion 选中" + PokerUtil.quaryPokerValue(node.picNum));
-        testArray.push(node.picNum);
+        sendArray.push(node.picNum);
         this.saveRoundPoker(node.picNum, 1, i * this.cardWidth);
         this.playerControlNodeArray[i].destroy();
         this.playerControlNodeArray.splice(i, 1);
@@ -154,8 +157,15 @@ cc.Class({
 
     }
 
-    PokerUtil.testLogic(testArray);
-    this.appendLog("追加牌内容");
+    console.log("onion", "helper" + this.logicHelper);
+    var secondCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 1, sendArray, this.pokerPlayer[1]); //  PokerUtil.testLogic(testArray);
+
+    sendArray.push(secondCardArray);
+    this.saveRoundPoker(secondCardArray, 2, 0);
+    var thridCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 2, sendArray, this.pokerPlayer[2]);
+    sendArray.push(thridCardArray);
+    this.saveRoundPoker(thridCardArray, 3, 0);
+    this.appendLog("我出" + sendArray + "下家出" + secondCardArray + "对家出" + thridCardArray);
   },
   //保存出牌  1 2 3 4 顺时针位
   saveRoundPoker: function saveRoundPoker(picNum, index, offset) {
@@ -167,9 +177,21 @@ cc.Class({
     this.roundPoker.push(newStar); // this.node.addChild(newStar);
     // let height = this.ground.height / 2 * -1;
 
-    if (index === 1) {
-      // height = height + 100;
-      this.layoutBottom.node.addChild(newStar);
+    switch (index) {
+      case 1:
+        this.layoutBottom.node.addChild(newStar);
+        this.logicHelper.removePokerFromArray(this.gameHost, picNum, this.pokerPlayer[0]);
+        break;
+
+      case 2:
+        this.layoutLeft.node.addChild(newStar);
+        this.logicHelper.removePokerFromArray(this.gameHost, picNum, this.pokerPlayer[1]);
+        break;
+
+      case 3:
+        this.layoutTop.node.addChild(newStar);
+        this.logicHelper.removePokerFromArray(this.gameHost, picNum, this.pokerPlayer[2]);
+        break;
     } // newStar.setPosition(cc.v2(-150 + this.startCardPostion + offset, height));
 
   },
@@ -198,17 +220,26 @@ cc.Class({
       this.playerControlNodeArray = [];
     }
 
-    console.log("spawnBottomCard " + this.pokerPlayer[0].length);
     this.createBottomCard();
   },
+
+  /**
+   * type1Array:type1Array,
+          type2Array:type2Array,
+          type3Array:type3Array,
+          type4Array:type4Array,
+          hostArray:hostArray,
+          total:total
+   */
   createBottomCard: function createBottomCard() {
     var startPosition = 0;
+    var userObj = this.pokerPlayer[0];
 
-    for (var i = 0; i < this.pokerPlayer[0].length; i++) {
+    for (var i = 0; i < userObj.total.length; i++) {
       // 使用给定的模板在场景中生成一个新节点
       var newStar = cc.instantiate(this.cardPrefab); // newStar.setPicNum("i"+i);
 
-      newStar.getComponent('Card').picNum = this.pokerPlayer[0][i];
+      newStar.getComponent('Card').picNum = userObj.total[i];
       this.playerControlNodeArray.push(newStar); // this.node.addChild(newStar);
 
       this.layoutContainer.node.addChild(newStar);
@@ -283,14 +314,14 @@ cc.Class({
           //随机到主后，第一张主牌亮出
           if (host == PokerUtil.quaryPokerTypeValue(value)) {
             this.gameHost = value;
-            this.appendLog("本轮游戏主" + PokerUtil.quaryType(this.gameHost) + ",主牌" + PokerUtil.quaryPokerValue(value) + "在" + this.expandPlayer(i));
+            this.appendLog("本轮游戏,主牌" + PokerUtil.quaryPokerValue(value) + "在" + this.expandPlayer(i));
           }
         }
       }
 
       var playerObj = PokerUtil.sortPokers(host, playerPokerArray);
-      console.log("onion", JSON.stringify(playerObj));
-      this.pokerPlayer.push(playerObj.total);
+      console.log("onion====", JSON.stringify(playerObj));
+      this.pokerPlayer.push(playerObj);
     }
 
     this.spawnBottomCard();

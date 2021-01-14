@@ -21,8 +21,7 @@ export default class PokerUtil {
         let roundhost = Math.random() * 4;
         gamehost = parseInt(gamehost) + 1;
         roundhost = parseInt(roundhost) + 1;
-        console.log("onion", "当前游戏主" + gamehost + "本轮主" + roundhost);
-        console.log("onion", PokerUtil.comparePoker(gamehost, roundhost, testArray1, testArray2));
+      
 
     }
 
@@ -39,11 +38,19 @@ export default class PokerUtil {
     static comparePoker = (gamehost, roundhost, valueLeft, valueRight) => {
         console.log("onion", "comparePoker++" + PokerUtil.quaryPokerValue(valueLeft) + "/" + PokerUtil.quaryPokerValue(valueRight));
         if (Array.isArray(valueLeft) || Array.isArray(valueRight)) {
+            if(valueLeft.length==1){
+                valueLeft=valueLeft[0];
+            }
+            if(valueRight.length==1){
+                valueRight=valueRight[0];
+            }
+        }
+
+        if (Array.isArray(valueLeft) || Array.isArray(valueRight)) {
             console.error("onion", "暂不支持数组");
             PokerUtil.compareArray(gamehost, roundhost, valueLeft, valueRight);
             return LEFT_WIN;
         }
-
         if (valueRight == valueLeft) {
             //完全相同，先牌大
             return LEFT_WIN;
@@ -130,6 +137,10 @@ export default class PokerUtil {
     static quaryIsHost(poker) {
         let value = parseInt(poker);
         return value == 15 || value == 3 || value == 5 || value == 16 || value == 17 || value == 18;//2 3 5 小王 大王 主5
+    }
+
+    static quaryIsSocer(poker){
+        return poker==5||poker==10||poker==13;
     }
 
     /**
@@ -256,8 +267,6 @@ export default class PokerUtil {
         b=Math.floor(b/10);
         let left=PokerUtil.quaryPokerWeight(a);
         let right=PokerUtil.quaryPokerWeight(b);
-        console.log("onion=="+a+"/"+b);
-        console.log("onion=="+left+"/"+right);
         return left-right;
     }
 
@@ -393,6 +402,11 @@ export default class PokerUtil {
             }
             
             // let type=parseInt(item.substring(2));
+            let value=Math.floor(item/10);
+            if(PokerUtil.quaryIsHost(value)){
+                hostArray.push(item);
+                continue;
+            }
             let type=item%10;
             switch (type){
                 case 1:
@@ -430,6 +444,7 @@ export default class PokerUtil {
         }
     }
 
+   
    static createStatic=(type1Array,type2Array,type3Array,type4Array,hostArray,total)=>{
         return {
             type1Array:type1Array,

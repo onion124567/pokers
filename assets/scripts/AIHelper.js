@@ -1,0 +1,291 @@
+import PokerUtil from "./PokerUtil";
+
+let pokerWeight = [4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 3, 5, 16, 17, 18];//主5为18
+let LEFT_WIN = -1;
+let RIGHT_WIN = 1;
+export default class AIHelper {
+
+    // {
+    //     type1Array:type1Array,
+    //     type2Array:type2Array,
+    //     type3Array:type3Array,
+    //     type4Array:type4Array,
+    //     hostArray:hostArray,
+    //     total:total
+    // }
+    /**
+     * 检测哪些牌可以出
+     * @param gameHost
+     * @param roundHost
+     * @param userCard
+     * @param cardArray
+     */
+    checkUserCanSend(gameHost, roundHost, userCard, cardArray) {
+
+    }
+
+    /**
+     * 游戏每轮逻辑，
+     * 赢家出牌，确定本轮主 将主放进卡片数组里 调sendAIHostCard
+     * 下家出牌 调sendAIFollowCard
+     * 4家都出完结算，积分计算，结束本轮，返回积分
+     */
+    roundProgram() {
+
+    }
+
+    /**
+     * 先手电脑逻辑
+     * 普通打法：
+     * 有副出最大的副牌 或者副牌对
+     * 其次出最小主牌，不调主对
+     * 最后一轮出主对 或主
+     * 主应该在后面
+     * @param gameHost 主
+     * @param cardArray  当前手牌
+     */
+    sendAIHostCard(gamehost, cardArray) {
+        let sendCardIndexs = [];
+        for (let i = 0; i < cardArray.length; i++) {
+            let type = cardArray[i].substring(2);
+            let value = cardArray[i].substring(0, 2);
+            let isHost = type == gamehost || PokerUtil.quaryIsHost(value);
+            if (!isHost) {
+                if (sendCardIndexs.length === 0) {
+                    sendCardIndexs.push(i);
+                } else {
+                    if (cardArray[sendCardIndexs[0]] == cardArray[i]) {
+                        sendCardIndexs.push(i);
+                        break;
+                    }
+                    let sendCard = cardArray[sendCardIndexs[0]];
+                    let sendValue = sendCard.substring(0, 2);
+                    let result = PokerUtil.compareSinglePokerBigger(sendValue, value);
+                    if (result = RIGHT_WIN) {
+                        sendCard = value;
+                    }
+                }
+            } else {
+                if (sendCardIndexs.length === 0) {
+                    //没有副牌了
+                    sendCardIndexs.push(i);
+                } else {
+                    if (cardArray[sendCardIndexs[0]] == cardArray[i]) {
+                        sendCardIndexs.push(i);
+                        break;
+                    }
+                    let sendCard = cardArray[sendCardIndexs[0]];
+                    let sendValue = sendCard.substring(0, 2);
+                    let result = PokerUtil.compareSinglePokerBigger(sendValue, value);
+                    if (result = LEFT_WIN) {
+                        sendCard = value;
+                    }
+                }
+            }
+        }
+        return sendCardIndexs;
+
+    }
+
+    /**
+     * 后手电脑逻辑
+     * 判断当前谁大，队友大出分，队友小出小牌。
+     * 无牌出最小副牌
+     *
+     * @param gameHost  游戏主
+     * @param roundHost 本轮主
+     * @param userCard  三方所出的牌
+     * @param cardArray  自己剩余的牌
+     */
+    sendAIFollowCard(gameHost, roundHost, userCard, pokerObj) {
+        switch (userCard.length) {
+            case 0://自己是首家 理论上不存在，应该调sendAIHostCard
+                console.error("onion", "error 后手电脑调用了sendAIFollowCard 应该调用 sendAIHostCard ");
+                break;
+
+            case 1://尽量出大牌
+                return this.secondLogic(gameHost, roundHost, userCard, pokerObj);
+            case 2://
+                return this.sendThridPoker(gameHost, roundHost, userCard, pokerObj);
+        }
+
+    }
+    secondLogic(gameHost, roundHost, userCard, pokerObj) {
+        if (userCard[0].length > 1) {
+            //出对的逻辑
+        } else {
+            return this.selectSingleBigerPoker(gameHost, roundHost, userCard, pokerObj);
+
+        }
+    }
+
+    /**
+ * 第三手电脑
+ * 判断谁出的大,尝试盖过一手
+ */
+    sendThridPoker(gameHost, roundHost, userCard, pokerObj) {
+        let firstCard = userCard[0];
+        let secondCard = userCard[1];
+
+        let result = PokerUtil.comparePoker(gameHost, roundHost,firstCard, secondCard);
+        if (result === RIGHT_WIN) {
+            //对家大，尝试出分或小牌
+            return this.selectSocerPoker(gameHost, roundHost, firstCard, pokerObj);
+        } else {
+            //出最大牌，尝试压过firstCard 最大的牌也压不过就出小牌
+            //TODO 可以节约，出仅压过对方的大牌
+            return this.selectSingleBigerPoker(gameHost, roundHost, firstCard, pokerObj);
+        }
+
+
+    }
+
+    /**
+     * 四手电脑
+     */
+    sendForthPoker(gameHost, roundHost, userCard, cardArray) {
+        let firstCard = cardArray[0];
+        let secondCard = cardArray[1];
+        let thridCard = cardArray[2];
+        let result = PokerUtil.comparePoker(firstCard, secondCard);
+        if (result === RIGHT_WIN) {
+            result = PokerUtil.comparePoker(thridCard, secondCard);
+        }
+        if (result === RIGHT_WIN) {
+            //对家大，尝试出分或小牌
+        } else {
+            //出最大牌，尝试压过firstCard 最大的牌也压不过就出小牌
+            //TODO 可以节约，出仅压过对方的大牌
+        }
+    }
+    /**
+     * 顶牌逻辑
+     */
+    selectSingleBigerPoker(gameHost, roundHost, targetPoker, pokerObj) {
+        //出单的逻辑 1识别是否是主牌
+        let cardValue = targetPoker;
+        let typeValue = this.intGetType(cardValue);
+        let contentValue = this.intGetContent(cardValue);
+        let isHost = typeValue == gameHost || PokerUtil.quaryIsHost(contentValue);
+        if (isHost) {
+            //顶大牌
+            let array = this.selectArrayFrom(true, typeValue, pokerObj);
+            if (array.length > 0) {
+                let value = array[array.length - 1];
+                let result = PokerUtil.comparePoker(value, cardValue);
+                //能顶过 出大牌
+                if (result === LEFT_WIN) {
+                    return value;
+                } else {//顶不过 出小牌
+                    return array[0];
+                }
+            } else {
+                return userCard.total[userCard.total.length - 1];
+            }
+        } else {
+            //上家是否为A 
+            let isA = contentValue == 14;
+            console.log("onion",targetPoker+"type"+typeValue);
+            //自己是否还有该花色
+            let pokerArray = this.selectArrayFrom(false, typeValue, pokerObj);
+            if (pokerArray.length == 0) {
+                //出最小的牌杀
+                return pokerObj.hostArray[0];
+            } else if (isA) {
+                return pokerArray[0];
+            } else {
+                return pokerArray[pokerArray.length - 1];
+            }
+        }
+    }
+    /**
+     * 小牌逻辑
+     */
+    selectSmallerPoker() {
+
+    }
+    /**
+     * 上分逻辑 小牌逻辑
+     */
+    selectSocerPoker(gameHost, roundHost, targetPoker, pokerObj) {
+        let cardValue = targetPoker;
+        let typeValue = this.intGetType(cardValue);
+        let contentValue = this.intGetContent(cardValue);
+        let isHost = typeValue == gameHost || PokerUtil.quaryIsHost(contentValue);
+        if (isHost) {
+            let array = this.selectArrayFrom(true, typeValue, pokerObj);
+            if (array.length > 0) {
+                return this.selectScoerFromArray(array);
+            }
+            //TODO 待优化 出最小的牌 当前是总牌库的第一张牌 
+            return pokerObj.total[0];
+        } else {
+            let array = this.selectArrayFrom(true, typeValue, pokerObj);
+            if (array.length > 0) {
+                //从该花色选牌
+                return this.selectScoerFromArray(array);
+            }
+            //全局选牌
+            array = pokerObj.total;
+            return this.selectScoerFromArray(array);
+        }
+    }
+
+    selectScoerFromArray(array) {
+        for (let i = 0; i < array.length; i++) {
+            let result = PokerUtil.quaryIsSocer(this.intGetContent(array[i]));
+            if (result) {
+                return array[i];
+            }
+        }
+        return array[0];
+    }
+
+    /**
+     * 选出对应的牌组
+     * @param {*} isHost 
+     * @param {*} type 
+     * @param {*} pokerObj 
+     */
+    selectArrayFrom(isHost, type, pokerObj) {
+        if (isHost) {
+            return pokerObj.hostArray;
+        }
+        switch (type) {
+            case 1: return pokerObj.type1Array;
+            case 2: return pokerObj.type2Array;
+            case 3: return pokerObj.type3Array;
+            case 4: return pokerObj.type4Array;
+        }
+
+    }
+    removePokerFromArray(gameHost, pokerNum, pokerObj) {
+        let typeValue = this.intGetType(pokerNum);
+        let contentValue = this.intGetContent(pokerNum);
+        let isHost = typeValue == gameHost || PokerUtil.quaryIsHost(contentValue);
+        let array = this.selectArrayFrom(isHost, typeValue, pokerObj);
+        //分组数组删除
+        let index = array.indexOf(pokerNum);
+        array.splice(index, 1);
+        //全局数组删除
+        array = pokerObj.total;
+        index = array.indexOf(pokerNum);
+        array.splice(index, 1);
+    }
+    intGetType(cardValue) {
+        return Math.floor(cardValue % 10);
+
+    }
+    strGetType(cardValue) {
+        return cardValue.substring(2)
+    }
+    intGetContent(cardValue) {
+        return Math.floor(cardValue / 10);
+    }
+    strGetContent(cardValue) {
+        return cardValue.substring(0, 2);
+    }
+
+
+
+}
