@@ -139,8 +139,19 @@ export default class PokerUtil {
         return value == 15 || value == 3 || value == 5 || value == 16 || value == 17 || value == 18;//2 3 5 小王 大王 主5
     }
 
+    /**
+     * 返回分数值
+     * @param poker
+     * @returns {*}
+     */
     static quaryIsSocer(poker){
-        return poker==5||poker==10||poker==13;
+        if(poker==5||poker==10){
+            return poker;
+        }else if(poker==13){
+            return 10;
+        }else {
+            return 0;
+        }
     }
 
     /**

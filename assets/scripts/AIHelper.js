@@ -14,24 +14,91 @@ export default class AIHelper {
     //     total:total
     // }
     /**
-     * 检测哪些牌可以出
+     * 检测用户出的牌是否合法
      * @param gameHost
      * @param roundHost
      * @param userCard
      * @param cardArray
      */
-    checkUserCanSend(gameHost, roundHost, userCard, cardArray) {
+    checkUserCanSend(gameHost, roundHost, firstSendCard, willSendCard) {
+        if (Array.isArray(firstSendCard)) {
+            //暂时不支持
+            console.log("onion", "暂时不支持出对");
+            return false;
+        }
+
 
     }
 
     /**
      * 游戏每轮逻辑，
-     * 赢家出牌，确定本轮主 将主放进卡片数组里 调sendAIHostCard
+     * 赢家出牌，确定本轮主
      * 下家出牌 调sendAIFollowCard
      * 4家都出完结算，积分计算，结束本轮，返回积分
+     * @param onRoundCallBack  回调 该相应玩家出牌
+     * @param winLocal 优先出牌方 索引从0开始
+     * @param gameHost 当前游戏主
      */
-    roundProgram() {
+    roundProgram(onUserPlayCallBack, onRoundCallBack, roundOverCallBack,winLocal, gameHost,sendArray) {
+        let roundHost = null;
+        if(!sendArray||sendArray.length===0){
+            sendArray=[];//本轮出的牌
+        }else {
+            let pokers =sendArray[0];
+            if(Array.isArray(pokers)){
+                roundHost = this.intGetType(pokers[0]);
+                console.log("onion","暂不支持出对");
+                return;
+            }else {
+                roundHost = this.intGetType(pokers);
+            }
+        }
 
+        for (let i = 0; i < 4-sendArray.length; i++) {
+            let currentPlayer = (winLocal + i)%4;
+            if(currentPlayer==0){
+                onUserPlayCallBack(gameHost, roundHost, sendArray, currentPlayer);
+                return;
+            }
+            let pokers =onRoundCallBack(gameHost, roundHost, sendArray, currentPlayer);
+            if(sendArray.length==0){
+                if(Array.isArray(pokers)){
+                    roundHost = this.intGetType(pokers[0]);
+                    console.log("onion","暂不支持出对");
+                    return;
+                }else {
+                    roundHost = this.intGetType(pokers);
+                }
+            }
+            sendArray.push(pokers);
+        }
+        let bigger=null;
+        let sumSocer=0;
+        let winnerPosition=0;
+        //判断哪方牌大
+        for(let i=0;i<sendArray.length;i++){
+            let item=sendArray[i];
+            let content=this.intGetContent(item);
+            sumSocer+=PokerUtil.quaryIsSocer(content);
+            if(bigger==null){
+                bigger=item;
+                winnerPosition=i;
+                continue
+            }
+            let result=PokerUtil.comparePoker(gameHost,roundHost,item,bigger);
+            if(result==LEFT_WIN){
+                bigger=item;
+                winnerPosition=i;
+            }
+        }
+        winnerPosition+=winLocal;
+        winnerPosition=winnerPosition%4;
+        if(winnerPosition==0||winnerPosition==2){
+            //加分
+        }else {
+            sumSocer=0;
+        }
+        roundOverCallBack(winnerPosition,sumSocer);
     }
 
     /**
@@ -110,6 +177,7 @@ export default class AIHelper {
         }
 
     }
+
     secondLogic(gameHost, roundHost, userCard, pokerObj) {
         if (userCard[0].length > 1) {
             //出对的逻辑
@@ -120,14 +188,14 @@ export default class AIHelper {
     }
 
     /**
- * 第三手电脑
- * 判断谁出的大,尝试盖过一手
- */
+     * 第三手电脑
+     * 判断谁出的大,尝试盖过一手
+     */
     sendThridPoker(gameHost, roundHost, userCard, pokerObj) {
         let firstCard = userCard[0];
         let secondCard = userCard[1];
 
-        let result = PokerUtil.comparePoker(gameHost, roundHost,firstCard, secondCard);
+        let result = PokerUtil.comparePoker(gameHost, roundHost, firstCard, secondCard);
         if (result === RIGHT_WIN) {
             //对家大，尝试出分或小牌
             return this.selectSocerPoker(gameHost, roundHost, firstCard, pokerObj);
@@ -158,6 +226,7 @@ export default class AIHelper {
             //TODO 可以节约，出仅压过对方的大牌
         }
     }
+
     /**
      * 顶牌逻辑
      */
@@ -180,12 +249,12 @@ export default class AIHelper {
                     return array[0];
                 }
             } else {
-                return userCard.total[userCard.total.length - 1];
+                return pokerObj.total[pokerObj.total.length - 1];
             }
         } else {
             //上家是否为A 
             let isA = contentValue == 14;
-            console.log("onion",targetPoker+"type"+typeValue);
+            console.log("onion", targetPoker + "type" + typeValue);
             //自己是否还有该花色
             let pokerArray = this.selectArrayFrom(false, typeValue, pokerObj);
             if (pokerArray.length == 0) {
@@ -198,12 +267,7 @@ export default class AIHelper {
             }
         }
     }
-    /**
-     * 小牌逻辑
-     */
-    selectSmallerPoker() {
 
-    }
     /**
      * 上分逻辑 小牌逻辑
      */
@@ -243,22 +307,27 @@ export default class AIHelper {
 
     /**
      * 选出对应的牌组
-     * @param {*} isHost 
-     * @param {*} type 
-     * @param {*} pokerObj 
+     * @param {*} isHost
+     * @param {*} type
+     * @param {*} pokerObj
      */
     selectArrayFrom(isHost, type, pokerObj) {
         if (isHost) {
             return pokerObj.hostArray;
         }
         switch (type) {
-            case 1: return pokerObj.type1Array;
-            case 2: return pokerObj.type2Array;
-            case 3: return pokerObj.type3Array;
-            case 4: return pokerObj.type4Array;
+            case 1:
+                return pokerObj.type1Array;
+            case 2:
+                return pokerObj.type2Array;
+            case 3:
+                return pokerObj.type3Array;
+            case 4:
+                return pokerObj.type4Array;
         }
 
     }
+
     removePokerFromArray(gameHost, pokerNum, pokerObj) {
         let typeValue = this.intGetType(pokerNum);
         let contentValue = this.intGetContent(pokerNum);
@@ -272,20 +341,23 @@ export default class AIHelper {
         index = array.indexOf(pokerNum);
         array.splice(index, 1);
     }
+
     intGetType(cardValue) {
         return Math.floor(cardValue % 10);
 
     }
+
     strGetType(cardValue) {
         return cardValue.substring(2)
     }
+
     intGetContent(cardValue) {
         return Math.floor(cardValue / 10);
     }
+
     strGetContent(cardValue) {
         return cardValue.substring(0, 2);
     }
-
 
 
 }
