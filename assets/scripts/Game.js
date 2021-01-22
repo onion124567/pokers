@@ -157,6 +157,10 @@ cc.Class({
 
     roundOverCallBack:function(winnerPosition,sumSocer){
         PokerUtil.destoryArray(this.roundPoker);
+        this.score=sumSocer+this.score;
+        this.roundHost=null;
+        this.logicHelper.roundProgram(this.onUserPlayCallBack,this.onRoundCallBack,
+            this.roundOverCallBack,winnerPosition,this.gameHost,[]);
     },
 
 
@@ -174,7 +178,7 @@ cc.Class({
             }
             // this.playerControlNodeArray[i].destroy();
         }
-        let message=this.logicHelper.checkUserCanSend(this.gameHost,this.roundHost,this.sendArray,willSendCard);
+        let message=this.logicHelper.checkUserCanSend(this.gameHost,this.roundHost,this.pokerPlayer[0],willSendCard);
         if(!message){
             console.log("onion","不能出"+message);
             return

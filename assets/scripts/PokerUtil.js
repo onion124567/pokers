@@ -468,4 +468,17 @@ export default class PokerUtil {
 
    }
 
+   static saveRecoder=()=>{
+       let userData = {
+           name: 'Tracer',
+           level: 1,
+           gold: 100
+       };
+
+       cc.sys.localStorage.setItem('userData', JSON.stringify(userData));
+   }
+   static quaryReocder=()=>{
+       let userData = JSON.parse(cc.sys.localStorage.getItem('userData'));
+   }
+
 }

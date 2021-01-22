@@ -20,12 +20,37 @@ export default class AIHelper {
      * @param userCard
      * @param cardArray
      */
-    checkUserCanSend(gameHost, roundHost, firstSendCard, willSendCard) {
-        if (Array.isArray(firstSendCard)) {
+    checkUserCanSend(gameHost, roundHost, userPokerObj, willSendCard) {
+        if (Array.isArray(willSendCard)) {
             //暂时不支持
             console.log("onion", "暂时不支持出对");
             return false;
         }
+        if(!roundHost){
+            //没有本轮主，玩家头一个出牌
+            return true;
+        }
+        if(gameHost==roundHost){
+            let targetArray=this.selectArrayFrom(true,roundHost,userPokerObj);
+            //调主
+            if(userPokerObj.hostArray.length>0||targetArray.length>0){
+                //有主牌必须出主牌
+               let flag1= userPokerObj.hostArray.indexOf(willSendCard)!==-1;
+               let flag2=targetArray.indexOf(willSendCard)!==-1;
+               return flag2||flag1;
+            }
+            //没主了随便出
+        }else {
+            //花色相同可以出
+            let targetArray=this.selectArrayFrom(true,roundHost,userPokerObj);
+            if(targetArray.length>0){
+                return targetArray.indexOf(willSendCard)!==-1;
+            }
+            //无roundHost花色可以出
+
+        }
+        //出副牌时，有副牌必须出副牌
+        return true;
 
 
     }
@@ -307,9 +332,9 @@ export default class AIHelper {
 
     /**
      * 选出对应的牌组
-     * @param {*} isHost
-     * @param {*} type
-     * @param {*} pokerObj
+     * @param {*} isHost  固定主数组
+     * @param {*} type    花色类型
+     * @param {*} pokerObj  牌组对象
      */
     selectArrayFrom(isHost, type, pokerObj) {
         if (isHost) {
