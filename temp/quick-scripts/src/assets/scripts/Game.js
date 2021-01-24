@@ -134,38 +134,90 @@ cc.Class({
     // 初始化计分
 
     this.score = 0;
+    this.logicHelper.roundProgram(this.onUserPlayCallBack, this.onRoundCallBack, this.roundOverCallBack, 0, this.gameHost, []);
+  },
+
+  /**
+   * 电脑出牌，直接渲染
+   * @param gameHost
+   * @param roundHost
+   * @param sendArray
+   * @param currentPlayer
+   */
+  onRoundCallBack: function onRoundCallBack(gameHost, roundHost, sendArray, currentPlayer) {
+    this.roundHost = roundHost;
+    this.sendArray = sendArray;
+    var sendCard = this.logicHelper.sendAIFollowCard(this.gameHost, roundHost, sendArray, this.pokerPlayer[currentPlayer]);
+    sendArray.push(sendCard);
+    this.saveRoundPoker(sendCard, currentPlayer + 1, 0);
+  },
+
+  /**
+   * 玩家出牌 出牌按钮可以点击
+   * @param gameHost
+   * @param roundHost
+   * @param sendArray
+   * @param currentPlayer
+   */
+  onUserPlayCallBack: function onUserPlayCallBack(gameHost, roundHost, sendArray, currentPlayer) {},
+  roundOverCallBack: function roundOverCallBack(winnerPosition, sumSocer) {
+    PokerUtil.destoryArray(this.roundPoker);
+    this.score = sumSocer + this.score;
+    this.roundHost = null;
+    this.logicHelper.roundProgram(this.onUserPlayCallBack, this.onRoundCallBack, this.roundOverCallBack, winnerPosition, this.gameHost, []);
   },
   refreshCallback: function refreshCallback(button) {
     this.publishPokers();
   },
   sendCallback: function sendCallback(button) {
-    var sendArray = [];
-    PokerUtil.destoryArray(this.roundPoker);
+    // let sendArray = [];
+    var willSendCard = [];
 
-    for (var i = 0; i < this.playerControlNodeArray.length;) {
+    for (var i = 0; i < this.playerControlNodeArray.length; i++) {
       //判断是否可出
       var node = this.playerControlNodeArray[i].getComponent('Card');
 
       if (node.isCheck) {
-        sendArray.push(node.picNum);
-        this.saveRoundPoker(node.picNum, 1, i * this.cardWidth);
-        this.playerControlNodeArray[i].destroy();
-        this.playerControlNodeArray.splice(i, 1);
-      } else {
-        i++;
+        willSendCard.push(node.picNum);
       } // this.playerControlNodeArray[i].destroy();
 
     }
 
-    console.log("onion", "helper" + this.logicHelper);
-    var secondCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 1, sendArray, this.pokerPlayer[1]); //  PokerUtil.testLogic(testArray);
+    var message = this.logicHelper.checkUserCanSend(this.gameHost, this.roundHost, this.pokerPlayer[0], willSendCard);
 
-    sendArray.push(secondCardArray);
-    this.saveRoundPoker(secondCardArray, 2, 0);
-    var thridCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 2, sendArray, this.pokerPlayer[2]);
-    sendArray.push(thridCardArray);
-    this.saveRoundPoker(thridCardArray, 3, 0);
-    this.appendLog("我出" + sendArray + "下家出" + secondCardArray + "对家出" + thridCardArray);
+    if (!message) {
+      console.log("onion", "不能出" + message);
+      return;
+    } //出牌 移除并添加
+
+
+    for (var _i = 0; _i < this.playerControlNodeArray.length;) {
+      //判断是否可出
+      var _node = this.playerControlNodeArray[_i].getComponent('Card');
+
+      if (_node.isCheck) {
+        // willSendArray.push(node.picNum);
+        this.saveRoundPoker(_node.picNum, 1, _i * this.cardWidth);
+
+        this.playerControlNodeArray[_i].destroy();
+
+        this.playerControlNodeArray.splice(_i, 1);
+      } else {
+        _i++;
+      } // this.playerControlNodeArray[i].destroy();
+
+    }
+
+    this.sendArray.push(willSendCard);
+    this.logicHelper.roundProgram(this.onUserPlayCallBack, this.onRoundCallBack, this.roundOverCallBack, 0, this.gameHost, this.sendArray); // let secondCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 1, sendArray, this.pokerPlayer[1]);
+    //
+    // sendArray.push(secondCardArray);
+    //
+    // this.saveRoundPoker(secondCardArray, 2, 0);
+    // let thridCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 2, sendArray, this.pokerPlayer[2]);
+    // sendArray.push(thridCardArray);
+    // this.saveRoundPoker(thridCardArray, 3, 0);
+    // this.appendLog("我出" + sendArray + "下家出" + secondCardArray + "对家出" + thridCardArray);
   },
   //保存出牌  1 2 3 4 顺时针位
   saveRoundPoker: function saveRoundPoker(picNum, index, offset) {
@@ -191,6 +243,11 @@ cc.Class({
       case 3:
         this.layoutTop.node.addChild(newStar);
         this.logicHelper.removePokerFromArray(this.gameHost, picNum, this.pokerPlayer[2]);
+        break;
+
+      case 4:
+        this.layoutRight.node.addChild(newStar);
+        this.logicHelper.removePokerFromArray(this.gameHost, picNum, this.pokerPlayer[3]);
         break;
     } // newStar.setPosition(cc.v2(-150 + this.startCardPostion + offset, height));
 
