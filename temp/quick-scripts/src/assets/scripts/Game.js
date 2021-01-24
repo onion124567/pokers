@@ -8,6 +8,7 @@ var PokerUtil = require("PokerUtil");
 
 var AIHelper = require("AIHelper");
 
+var self;
 cc.Class({
   "extends": cc.Component,
   properties: {
@@ -32,6 +33,7 @@ cc.Class({
     pokerPlayer: [],
     //当前轮次出牌节点,
     roundPoker: [],
+    sendArray: [],
     //主角当前牌节点
     playerControlNodeArray: [],
     //洗牌
@@ -101,7 +103,8 @@ cc.Class({
     }
   },
   onLoad: function onLoad() {
-    // 获取地平面的 y 轴坐标
+    self = this; // 获取地平面的 y 轴坐标
+
     this.groundY = this.ground.y + this.ground.height / 2; // 初始化计时器
 
     this.timer = 0;
@@ -133,7 +136,9 @@ cc.Class({
     this.publishPokers(); // this.spawnNewStar();
     // 初始化计分
 
-    this.score = 0;
+    this.score = 0; // this.onRoundCallBack=this.onRoundCallBack.bind(this);
+
+    this.onRoundCallBack = this.onRoundCallBack.bind(this);
     this.logicHelper.roundProgram(this.onUserPlayCallBack, this.onRoundCallBack, this.roundOverCallBack, 0, this.gameHost, []);
   },
 
@@ -145,11 +150,14 @@ cc.Class({
    * @param currentPlayer
    */
   onRoundCallBack: function onRoundCallBack(gameHost, roundHost, sendArray, currentPlayer) {
-    this.roundHost = roundHost;
-    this.sendArray = sendArray;
-    var sendCard = this.logicHelper.sendAIFollowCard(this.gameHost, roundHost, sendArray, this.pokerPlayer[currentPlayer]);
-    sendArray.push(sendCard);
-    this.saveRoundPoker(sendCard, currentPlayer + 1, 0);
+    self.roundHost = roundHost;
+    self.sendArray = sendArray;
+    console.log("onion", "轮次回调" + sendArray);
+    var sendCard = self.logicHelper.sendAIFollowCard(self.gameHost, roundHost, sendArray, self.pokerPlayer[currentPlayer]);
+    console.log("onion", "轮次出牌" + sendCard); // sendArray.push(sendCard);
+
+    self.saveRoundPoker(sendCard, currentPlayer + 1, 0);
+    return sendCard;
   },
 
   /**
@@ -159,26 +167,36 @@ cc.Class({
    * @param sendArray
    * @param currentPlayer
    */
-  onUserPlayCallBack: function onUserPlayCallBack(gameHost, roundHost, sendArray, currentPlayer) {},
+  onUserPlayCallBack: function onUserPlayCallBack(gameHost, roundHost, sendArray, currentPlayer) {
+    console.log("onion", "回调到user" + sendArray);
+  },
   roundOverCallBack: function roundOverCallBack(winnerPosition, sumSocer) {
-    PokerUtil.destoryArray(this.roundPoker);
-    this.score = sumSocer + this.score;
-    this.roundHost = null;
-    this.logicHelper.roundProgram(this.onUserPlayCallBack, this.onRoundCallBack, this.roundOverCallBack, winnerPosition, this.gameHost, []);
+    setTimeout(function () {
+      PokerUtil.destoryArray(self.roundPoker);
+      self.score = sumSocer + self.score;
+      self.roundHost = null;
+      self.appendLog(winnerPosition + "大,捞分" + sumSocer); // self.logicHelper.roundProgram(self.onUserPlayCallBack,self.onRoundCallBack,
+      //     self.roundOverCallBack,winnerPosition,self.gameHost,[]);
+    }, 1000);
   },
   refreshCallback: function refreshCallback(button) {
     this.publishPokers();
   },
   sendCallback: function sendCallback(button) {
     // let sendArray = [];
-    var willSendCard = [];
+    var willSendCard = null;
 
     for (var i = 0; i < this.playerControlNodeArray.length; i++) {
       //判断是否可出
       var node = this.playerControlNodeArray[i].getComponent('Card');
 
       if (node.isCheck) {
-        willSendCard.push(node.picNum);
+        if (willSendCard && !Array.isArray(willSendCard)) {
+          willSendCard = [];
+          willSendCard.push(node.picNum);
+        } else {
+          willSendCard = node.picNum;
+        }
       } // this.playerControlNodeArray[i].destroy();
 
     }
@@ -208,16 +226,12 @@ cc.Class({
 
     }
 
+    if (!this.sendArray) {
+      this.sendArray = [];
+    }
+
     this.sendArray.push(willSendCard);
-    this.logicHelper.roundProgram(this.onUserPlayCallBack, this.onRoundCallBack, this.roundOverCallBack, 0, this.gameHost, this.sendArray); // let secondCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 1, sendArray, this.pokerPlayer[1]);
-    //
-    // sendArray.push(secondCardArray);
-    //
-    // this.saveRoundPoker(secondCardArray, 2, 0);
-    // let thridCardArray = this.logicHelper.sendAIFollowCard(this.gameHost, 2, sendArray, this.pokerPlayer[2]);
-    // sendArray.push(thridCardArray);
-    // this.saveRoundPoker(thridCardArray, 3, 0);
-    // this.appendLog("我出" + sendArray + "下家出" + secondCardArray + "对家出" + thridCardArray);
+    this.logicHelper.roundProgram(this.onUserPlayCallBack, this.onRoundCallBack, this.roundOverCallBack, 0, this.gameHost, this.sendArray);
   },
   //保存出牌  1 2 3 4 顺时针位
   saveRoundPoker: function saveRoundPoker(picNum, index, offset) {
@@ -226,7 +240,8 @@ cc.Class({
     newStar.getComponent('Card').picNum = picNum;
     newStar.scaleX = 0.5;
     newStar.scaleY = 0.5;
-    this.roundPoker.push(newStar); // this.node.addChild(newStar);
+    this.roundPoker.push(newStar);
+    console.log("onion", "保存出牌" + picNum + "index" + index); // this.node.addChild(newStar);
     // let height = this.ground.height / 2 * -1;
 
     switch (index) {
