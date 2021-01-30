@@ -40,6 +40,11 @@ cc.Class({
             default: null,
             type: cc.Button
         },
+        //出牌
+        backButton: {
+            default: null,
+            type: cc.Button
+        },
 
         //当前胜方
         currentWinner: 1,
@@ -127,6 +132,7 @@ cc.Class({
 
         this.refreshButton.node.on('click', this.refreshCallback, this);
         this.sendButton.node.on('click', this.sendCallback, this);
+        this.backButton.node.on('click',this.backClick, this)
         this.publishPokers();
         // this.spawnNewStar();
         // 初始化计分
@@ -178,6 +184,10 @@ cc.Class({
 
     refreshCallback: function (button) {
         this.publishPokers();
+    },
+    backClick:function(button){
+        console.log("onion","backClick");
+        cc.director.loadScene("other");
     },
     sendCallback: function (button) {
         // let sendArray = [];
