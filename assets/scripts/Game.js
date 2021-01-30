@@ -143,14 +143,20 @@ cc.Class({
      * @param currentPlayer
      */
      onRoundCallBack:(gameHost, roundHost, sendArray, currentPlayer)=>{
-         self.roundHost=roundHost;
-         self.sendArray=sendArray;
-         console.log("onion","轮次回调"+sendArray);
-       let sendCard= self.logicHelper.sendAIFollowCard(self.gameHost, roundHost, sendArray, self.pokerPlayer[currentPlayer]);
-       console.log("onion","轮次出牌"+sendCard);
-        // sendArray.push(sendCard);
-        self.saveRoundPoker(sendCard, currentPlayer+1, 0);
-        return sendCard;
+         if(!roundHost||sendArray.length==0){
+             let sendCard = self.logicHelper.sendAIHostCard(gameHost,self.pokerPlayer[currentPlayer]);
+             self.saveRoundPoker(sendCard, currentPlayer+1, 0);
+             return sendCard;
+         }else {
+             self.roundHost=roundHost;
+             self.sendArray=sendArray;
+             console.log("onion","轮次回调"+sendArray);
+             let sendCard= self.logicHelper.sendAIFollowCard(self.gameHost, roundHost, sendArray, self.pokerPlayer[currentPlayer]);
+             console.log("onion","轮次出牌"+sendCard);
+             // sendArray.push(sendCard);
+             self.saveRoundPoker(sendCard, currentPlayer+1, 0);
+             return sendCard;
+         }
     },
     /**
      * 玩家出牌 出牌按钮可以点击
@@ -169,8 +175,8 @@ cc.Class({
             self.score=sumSocer+self.score;
             self.roundHost=null;
             self.appendLog(winnerPosition+"大,捞分"+sumSocer);
-            // self.logicHelper.roundProgram(self.onUserPlayCallBack,self.onRoundCallBack,
-            //     self.roundOverCallBack,winnerPosition,self.gameHost,[]);
+            self.logicHelper.roundProgram(self.onUserPlayCallBack,self.onRoundCallBack,
+                self.roundOverCallBack,winnerPosition,self.gameHost,[]);
         },1000);
         
     },
