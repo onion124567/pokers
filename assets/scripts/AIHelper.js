@@ -71,16 +71,16 @@ export default class AIHelper {
      */
     roundProgram(onUserPlayCallBack, onRoundCallBack, roundOverCallBack, winLocal, gameHost, sendArray) {
         let roundHost = null;
-        console.log("onion","轮次逻辑"+winLocal+"/"+sendArray);
+        console.log("onion", "轮次逻辑" + winLocal + "/" + sendArray);
         if (!sendArray || sendArray.length === 0) {
             sendArray = [];//本轮出的牌
         } else {
             let pokers = sendArray[0];
-            
-            if(Array.isArray(pokers)&&pokers.length===1){
-                pokers=pokers[0];
+
+            if (Array.isArray(pokers) && pokers.length === 1) {
+                pokers = pokers[0];
             }
-         
+
             if (Array.isArray(pokers)) {
                 roundHost = this.intGetType(pokers[0]);
                 console.log("onion", "暂不支持出对");
@@ -88,10 +88,10 @@ export default class AIHelper {
             } else {
                 roundHost = this.intGetType(pokers);
             }
-           
+
         }
-      
-        let orgNum=sendArray.length;
+
+        let orgNum = sendArray.length;
         for (let i = orgNum; i <= 4 - orgNum; i++) {
             let currentPlayer = (winLocal + i) % 4;
             if (currentPlayer == 0) {
@@ -99,7 +99,7 @@ export default class AIHelper {
                 return;
             }
             let pokers = onRoundCallBack(gameHost, roundHost, sendArray, currentPlayer);
-           
+
             if (sendArray.length == 0) {
                 if (Array.isArray(pokers)) {
                     roundHost = this.intGetType(pokers[0]);
@@ -110,9 +110,9 @@ export default class AIHelper {
                 }
             }
             sendArray.push(pokers);
-            console.log("onion","轮次迭代"+winLocal+"/"+pokers+"数组"+sendArray);
+            console.log("onion", "轮次迭代" + winLocal + "/" + pokers + "数组" + sendArray);
         }
-        console.log("onion","跳出循环"+winLocal);
+        console.log("onion", "跳出循环" + winLocal);
         let bigger = null;
         let sumSocer = 0;
         let winnerPosition = 0;
@@ -152,47 +152,27 @@ export default class AIHelper {
      * @param gameHost 主
      * @param cardArray  当前手牌
      */
-    sendAIHostCard(gamehost, cardArray) {
-        let sendCardIndexs = [];
-        for (let i = 0; i < cardArray.length; i++) {
-            let type = cardArray[i].substring(2);
-            let value = cardArray[i].substring(0, 2);
-            let isHost = type == gamehost || PokerUtil.quaryIsHost(value);
-            if (!isHost) {
-                if (sendCardIndexs.length === 0) {
-                    sendCardIndexs.push(i);
-                } else {
-                    if (cardArray[sendCardIndexs[0]] == cardArray[i]) {
-                        sendCardIndexs.push(i);
-                        break;
-                    }
-                    let sendCard = cardArray[sendCardIndexs[0]];
-                    let sendValue = sendCard.substring(0, 2);
-                    let result = PokerUtil.compareSinglePokerBigger(sendValue, value);
-                    if (result = RIGHT_WIN) {
-                        sendCard = value;
-                    }
-                }
+    sendAIHostCard(gamehost, userPokerObj) {
+        let maxValue = null;
+        let sendCard=null;
+        for (let i = 0; i < 4; i++) {//判断副牌
+            if (i == gamehost) {
+                continue;
             } else {
-                if (sendCardIndexs.length === 0) {
-                    //没有副牌了
-                    sendCardIndexs.push(i);
-                } else {
-                    if (cardArray[sendCardIndexs[0]] == cardArray[i]) {
-                        sendCardIndexs.push(i);
-                        break;
-                    }
-                    let sendCard = cardArray[sendCardIndexs[0]];
-                    let sendValue = sendCard.substring(0, 2);
-                    let result = PokerUtil.compareSinglePokerBigger(sendValue, value);
-                    if (result = LEFT_WIN) {
-                        sendCard = value;
-                    }
+                let array = this.selectArrayFrom(false, i, userPokerObj);
+                if (array.length > 0) {
+                   let content= this.intGetContent(array[array.length - 1]);
+                   if(maxValue<content){
+                       maxValue=content;
+                       sendCard=array[array.length - 1];
+                   }
                 }
             }
         }
-        return sendCardIndexs;
-
+        if(sendCard){
+            return sendCard;
+        }
+        return userPokerObj.total[0];
     }
 
     /**
@@ -215,7 +195,7 @@ export default class AIHelper {
                 return this.secondLogic(gameHost, roundHost, userCard, pokerObj);
             case 2://
                 return this.sendThridPoker(gameHost, roundHost, userCard, pokerObj);
-                case 3://
+            case 3://
                 return this.sendForthPoker(gameHost, roundHost, userCard, pokerObj);
         }
 
@@ -263,8 +243,8 @@ export default class AIHelper {
             result = PokerUtil.comparePoker(thridCard, secondCard);
         }
         if (result === RIGHT_WIN) {
-             //对家大，尝试出分或小牌
-             return this.selectSocerPoker(gameHost, roundHost, firstCard, pokerObj);
+            //对家大，尝试出分或小牌
+            return this.selectSocerPoker(gameHost, roundHost, firstCard, pokerObj);
         } else {
             //出最大牌，尝试压过firstCard 最大的牌也压不过就出小牌
             //TODO 可以节约，出仅压过对方的大牌
@@ -374,11 +354,11 @@ export default class AIHelper {
     }
 
     removePokerFromArray(gameHost, pokerNum, pokerObj) {
-        console.log("onion","pokerNum"+pokerNum);
+        console.log("onion", "pokerNum" + pokerNum);
         let typeValue = this.intGetType(pokerNum);
         let contentValue = this.intGetContent(pokerNum);
         let isHost = typeValue == gameHost || PokerUtil.quaryIsHost(contentValue);
-        console.log("onion","移除"+typeValue+"/"+contentValue+"/"+isHost);
+        console.log("onion", "移除" + typeValue + "/" + contentValue + "/" + isHost);
         let array = this.selectArrayFrom(isHost, typeValue, pokerObj);
         //分组数组删除
         let index = array.indexOf(pokerNum);
@@ -405,21 +385,22 @@ export default class AIHelper {
     strGetContent(cardValue) {
         return cardValue.substring(0, 2);
     }
-    isRealNum(val){
+
+    isRealNum(val) {
         // isNaN()函数 把空串 空格 以及NUll 按照0来处理 所以先去除，
-        
-    　　if(val === "" || val ==null){
+
+        if (val === "" || val == null) {
             return false;
-    　　}
-       if(!isNaN(val)){　　　　
-    　　//对于空数组和只有一个数值成员的数组或全是数字组成的字符串，isNaN返回false，例如：'123'、[]、[2]、['123'],isNaN返回false,
-       //所以如果不需要val包含这些特殊情况，则这个判断改写为if(!isNaN(val) && typeof val === 'number' )
-    　　　 return true; 
-    　　}
-    
-    　else{ 
-    　　　　return false; 
-    　　} 
+        }
+        if (!isNaN(val)) {
+            //对于空数组和只有一个数值成员的数组或全是数字组成的字符串，isNaN返回false，例如：'123'、[]、[2]、['123'],isNaN返回false,
+            //所以如果不需要val包含这些特殊情况，则这个判断改写为if(!isNaN(val) && typeof val === 'number' )
+            return true;
+        }
+
+        else {
+            return false;
+        }
     }
 
 }
