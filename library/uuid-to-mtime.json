@@ -535,8 +535,8 @@
     "relativePath": "game.fire"
   },
   "51b0ea7f-a166-4130-bf0b-7f70fc60cb1d": {
-    "asset": 1611585306578,
-    "meta": 1611586419760,
+    "asset": 1611982692399,
+    "meta": 1611983382807,
     "relativePath": "scripts"
   },
   "4644fd26-d96b-4005-8472-fa99fa74e686": {
@@ -629,20 +629,10 @@
     "meta": 1611459337458,
     "relativePath": "scripts\\PokerUtil.js"
   },
-  "440cc413-a25f-40a8-8234-c0095893cb0a": {
-    "asset": 1611492054393,
-    "meta": 1611492058968,
-    "relativePath": "scripts\\AIHelper.js"
-  },
   "aad5908e-9780-4204-83b3-9ce3a79f3e4b": {
     "asset": 1611586647207,
     "meta": 1611586647224,
     "relativePath": "other.fire"
-  },
-  "4e12f2d2-42ed-4bf8-a57a-426c4389abd4": {
-    "asset": 1611585095401,
-    "meta": 1611585096018,
-    "relativePath": "scripts\\Game.js"
   },
   "cad1be4b-986f-4d88-ab76-8c6b8bedb1f2": {
     "asset": 1611586362762,
@@ -653,5 +643,15 @@
     "asset": 1611586536070,
     "meta": 1611586536074,
     "relativePath": "test.anim"
+  },
+  "4e12f2d2-42ed-4bf8-a57a-426c4389abd4": {
+    "asset": 1611975444999,
+    "meta": 1611975446892,
+    "relativePath": "scripts\\Game.js"
+  },
+  "440cc413-a25f-40a8-8234-c0095893cb0a": {
+    "asset": 1611982692397,
+    "meta": 1611982693768,
+    "relativePath": "scripts\\AIHelper.js"
   }
 }

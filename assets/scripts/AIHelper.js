@@ -103,8 +103,10 @@ export default class AIHelper {
             if (sendArray.length == 0) {
                 if (Array.isArray(pokers)) {
                     roundHost = this.intGetType(pokers[0]);
-                    console.log("onion", "暂不支持出对");
-                    return;
+                    if(pokers.length!==1){
+                        console.log("onion", "暂不支持出对");
+                        return;
+                    }
                 } else {
                     roundHost = this.intGetType(pokers);
                 }
@@ -149,6 +151,7 @@ export default class AIHelper {
      * 其次出最小主牌，不调主对
      * 最后一轮出主对 或主
      * 主应该在后面
+     * 2511165
      * @param gameHost 主
      * @param cardArray  当前手牌
      */
@@ -159,7 +162,9 @@ export default class AIHelper {
             if (i == gamehost) {
                 continue;
             } else {
-                let array = this.selectArrayFrom(false, i, userPokerObj);
+
+                let array = this.selectArrayFrom(false, i+1, userPokerObj);
+                console.log("onion","array"+array)
                 if (array.length > 0) {
                    let content= this.intGetContent(array[array.length - 1]);
                    if(maxValue<content){

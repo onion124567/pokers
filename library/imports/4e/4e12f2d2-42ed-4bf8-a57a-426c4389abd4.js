@@ -156,14 +156,24 @@ cc.Class({
    * @param currentPlayer
    */
   onRoundCallBack: function onRoundCallBack(gameHost, roundHost, sendArray, currentPlayer) {
-    self.roundHost = roundHost;
-    self.sendArray = sendArray;
-    console.log("onion", "轮次回调" + sendArray);
-    var sendCard = self.logicHelper.sendAIFollowCard(self.gameHost, roundHost, sendArray, self.pokerPlayer[currentPlayer]);
-    console.log("onion", "轮次出牌" + sendCard); // sendArray.push(sendCard);
+    console.log("onion", "roundHost" + roundHost + "/" + sendArray);
 
-    self.saveRoundPoker(sendCard, currentPlayer + 1, 0);
-    return sendCard;
+    if (!roundHost || sendArray.length == 0) {
+      var sendCard = self.logicHelper.sendAIHostCard(gameHost, self.pokerPlayer[currentPlayer]);
+      self.saveRoundPoker(sendCard, currentPlayer + 1, 0);
+      return sendCard;
+    } else {
+      self.roundHost = roundHost;
+      self.sendArray = sendArray;
+      console.log("onion", "轮次回调" + sendArray);
+
+      var _sendCard = self.logicHelper.sendAIFollowCard(self.gameHost, roundHost, sendArray, self.pokerPlayer[currentPlayer]);
+
+      console.log("onion", "轮次出牌" + _sendCard); // sendArray.push(sendCard);
+
+      self.saveRoundPoker(_sendCard, currentPlayer + 1, 0);
+      return _sendCard;
+    }
   },
 
   /**
@@ -181,8 +191,8 @@ cc.Class({
       PokerUtil.destoryArray(self.roundPoker);
       self.score = sumSocer + self.score;
       self.roundHost = null;
-      self.appendLog(winnerPosition + "大,捞分" + sumSocer); // self.logicHelper.roundProgram(self.onUserPlayCallBack,self.onRoundCallBack,
-      //     self.roundOverCallBack,winnerPosition,self.gameHost,[]);
+      self.appendLog(winnerPosition + "大,捞分" + sumSocer);
+      self.logicHelper.roundProgram(self.onUserPlayCallBack, self.onRoundCallBack, self.roundOverCallBack, winnerPosition, self.gameHost, []);
     }, 1000);
   },
   refreshCallback: function refreshCallback(button) {

@@ -149,6 +149,7 @@ cc.Class({
      * @param currentPlayer
      */
      onRoundCallBack:(gameHost, roundHost, sendArray, currentPlayer)=>{
+         console.log("onion","roundHost"+roundHost+"/"+sendArray);
          if(!roundHost||sendArray.length==0){
              let sendCard = self.logicHelper.sendAIHostCard(gameHost,self.pokerPlayer[currentPlayer]);
              self.saveRoundPoker(sendCard, currentPlayer+1, 0);

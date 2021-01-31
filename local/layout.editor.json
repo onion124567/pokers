@@ -18,7 +18,7 @@
                 "children": [
                   "hierarchy"
                 ],
-                "height": 299.1875,
+                "height": 300,
                 "type": "panel",
                 "width": 304
               },
@@ -28,12 +28,12 @@
                   "assets",
                   "cloud-function"
                 ],
-                "height": 614.3125,
+                "height": 616,
                 "type": "panel",
                 "width": 304
               }
             ],
-            "height": 916.5,
+            "height": 919,
             "type": "dock-v",
             "width": 304
           },
@@ -46,7 +46,7 @@
                     "children": [
                       "scene"
                     ],
-                    "height": 614.3125,
+                    "height": 615,
                     "type": "panel",
                     "width": 1023
                   },
@@ -55,12 +55,12 @@
                     "children": [
                       "node-library"
                     ],
-                    "height": 614.3125,
+                    "height": 615,
                     "type": "panel",
                     "width": 264
                   }
                 ],
-                "height": 614.3125,
+                "height": 615,
                 "type": "dock-h",
                 "width": 1290
               },
@@ -71,12 +71,12 @@
                   "timeline",
                   "game-window"
                 ],
-                "height": 299.1875,
+                "height": 301,
                 "type": "panel",
                 "width": 1290
               }
             ],
-            "height": 916.5,
+            "height": 919,
             "type": "dock-v",
             "width": 1290
           },
@@ -86,7 +86,7 @@
               "inspector",
               "cocos-services"
             ],
-            "height": 916.5,
+            "height": 919,
             "type": "panel",
             "width": 304
           }
@@ -113,9 +113,23 @@
       "y": 241,
       "width": 516,
       "height": 538
+    },
+    "preferences": {
+      "x": 672,
+      "y": 241,
+      "width": 600,
+      "height": 564
+    },
+    "builder": {
+      "x": 702,
+      "y": 141,
+      "width": 516,
+      "height": 738
     }
   },
   "panelLabelWidth": {
-    "inspector": null
+    "inspector": null,
+    "preferences": null,
+    "builder": null
   }
 }
